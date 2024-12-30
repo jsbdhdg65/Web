@@ -1,0 +1,52 @@
+name: Deploy Web Panel via GitHub Actions with Cloudflared
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout kode Anda
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Instal Node.js (opsional, tergantung aplikasi)
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    # Instal dependensi (opsional untuk aplikasi Node.js)
+    - name: Install Dependencies
+      run: |
+        npm install
+
+    # Jalankan server web (misal Dashy atau lainnya)
+    - name: Start Web Panel
+      run: |
+        npm run build  # Bangun aplikasi (opsional)
+        npm run start &  # Jalankan aplikasi di background
+
+    # Instal Cloudflared
+    - name: Install Cloudflared
+      run: |
+        sudo apt-get update && sudo apt-get install -y wget
+        wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+        sudo mv cloudflared-linux-amd64 /usr/local/bin/cloudflared
+        sudo chmod +x /usr/local/bin/cloudflared
+
+    # Jalankan Cloudflared Tunnel (Quick Tunnel Mode)
+    - name: Start Cloudflared Tunnel
+      run: |
+        cloudflared tunnel --url http://localhost:3000 &
+        sleep 5  # Tunggu Cloudflared untuk memulai
+        curl -s http://localhost:3000 # Tes jika server berjalan
+
+    # Menjaga Job Tetap Hidup (Keep Alive)
+    - name: Keep Action Alive
+      run: |
+        while true; do echo "GitHub Action is running..."; sleep 60; done
