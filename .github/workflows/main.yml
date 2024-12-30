@@ -14,22 +14,20 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Instal Node.js (opsional, tergantung aplikasi)
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
+    # Ubah direktori ke folder tempat `package.json` berada
+    - name: Change directory to 'web'
+      run: cd web
 
-    # Instal dependensi (opsional untuk aplikasi Node.js)
+    # Instal dependensi
     - name: Install Dependencies
       run: |
         npm install
 
-    # Jalankan server web (misal Dashy atau lainnya)
+    # Jalankan server web
     - name: Start Web Panel
       run: |
-        npm run build  # Bangun aplikasi (opsional)
-        npm run start &  # Jalankan aplikasi di background
+        npm run build
+        npm run start &
 
     # Instal Cloudflared
     - name: Install Cloudflared
@@ -39,14 +37,14 @@ jobs:
         sudo mv cloudflared-linux-amd64 /usr/local/bin/cloudflared
         sudo chmod +x /usr/local/bin/cloudflared
 
-    # Jalankan Cloudflared Tunnel (Quick Tunnel Mode)
+    # Jalankan Cloudflared Tunnel
     - name: Start Cloudflared Tunnel
       run: |
         cloudflared tunnel --url http://localhost:3000 &
-        sleep 5  # Tunggu Cloudflared untuk memulai
-        curl -s http://localhost:3000 # Tes jika server berjalan
+        sleep 5
+        curl -s http://localhost:3000
 
-    # Menjaga Job Tetap Hidup (Keep Alive)
+    # Keep Action Alive
     - name: Keep Action Alive
       run: |
         while true; do echo "GitHub Action is running..."; sleep 60; done
